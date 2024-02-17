@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+using namespace std;
 
 class BTreeNodeMem;
 
@@ -61,4 +62,23 @@ public:
   }
   int getNodeCurrentCapacity() { return nodeItems.size(); }
   int getNodeMaxCapacity() { return 4; }
+};
+
+class BTree {
+  public:
+    BTreeNodeMem* root;
+};
+
+class BTreeSearchResult {
+public:
+  std::string key;
+  std::string value;
+
+  BTreeSearchResult(std::string key, std::string value) {
+    this->key = key;
+    this->value = value;
+  }
+  BTreeSearchResult() {
+    
+  };
 };

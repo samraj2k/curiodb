@@ -1,9 +1,9 @@
 #include "utils/btreememory.h"
 #include <cstddef>
-#include <iostream>
 #include <string>
 #include <vector>
 using namespace std;
+
 BTreeNodeMem *insertRoot(int flag = 0) {
   std::vector<BTreeNodeItem *> nodeItemVector;
   BTreeNodeMem *node = new BTreeNodeMem(flag, NULL, NULL, NULL, nodeItemVector);
@@ -119,14 +119,59 @@ bool insert(BTreeNodeMem *node, std::string key, std::string value) {
       return false;
   }
 }
+bool compareKeys(const BTreeNodeItem* a, const std::string& b) {
+    return stoi(a->key) < stoi(b);
+}
+int findLowerBound(BTreeNodeMem* node, string key ) {
+    vector<BTreeNodeItem*> &nodeItems = node->nodeItems;
+    auto it = std::lower_bound(nodeItems.begin(), nodeItems.end(), key, compareKeys);
+    int indexFound = it - nodeItems.begin();
+    return indexFound;
+}
 
-void print(BTreeNodeMem *node) {
-  if (node == NULL) {
-    return;
-  }
-  for (int i = 0; i < node->nodeItems.size(); i++) {
-    print(node->nodeItems[i]->child_left);
-    std::cout << node->nodeItems[i]->key << " ";
-  }
-  print(node->nodeItems.back()->child_right);
+void searchExact(BTreeNodeMem* node, string key, BTreeSearchResult &searchResult) {
+    if(node -> flags == 0) {
+        int index = findLowerBound(node, key);
+        if(index < node->getNodeCurrentCapacity() && node->nodeItems[index]->key == key) {
+            searchResult.key = key;
+            searchResult.value = node->nodeItems[index]->data;
+        }
+        return;
+    } else {
+        int index = findLowerBound(node, key);
+        int nodeItemsSize = node->getNodeCurrentCapacity();
+        if(index == nodeItemsSize || keyCompare(node->nodeItems[index]-> key, key) == 0) {
+            searchExact(node->nodeItems[min(index, nodeItemsSize - 1)]->child_right, key, searchResult);
+        } else {
+            searchExact(node->nodeItems[index]->child_left, key, searchResult);
+        }
+    }
+}
+
+void searchRange(BTreeNodeMem* node, string lkey, string rkey, vector<BTreeSearchResult>& searchResults) {
+    if(node -> flags == 0) {
+        int index = findLowerBound(node, lkey);
+        while(true) {
+            if(index == node->getNodeCurrentCapacity()) {
+                node = node -> right_link;
+                index = 0;
+            }
+            if(node == NULL) {
+                break;
+            }
+            if(keyCompare(node->nodeItems[index]->key, rkey) <= 0) {
+                searchResults.push_back(BTreeSearchResult(node->nodeItems[index]->key, node->nodeItems[index]->data));
+                index++;
+            } else break;
+        }
+        return;
+    } else {
+        int index = findLowerBound(node, lkey);
+        int nodeItemsSize = node->getNodeCurrentCapacity();
+        if(index == nodeItemsSize || keyCompare(node->nodeItems[index]-> key, lkey) == 0) {
+            searchRange(node->nodeItems[min(index, nodeItemsSize - 1)]->child_right, lkey, rkey, searchResults);
+        } else {
+            searchRange(node->nodeItems[index]->child_left, lkey, rkey, searchResults);
+        }
+    }
 }
