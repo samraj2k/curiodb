@@ -1,5 +1,9 @@
 # Prerequisites
 *.d
+.vscode
+.vscode/*
+*.plist
+
 
 # Compiled Object files
 *.slo
@@ -30,3 +34,4 @@
 *.exe
 *.out
 *.app
+*.dysm
