@@ -44,25 +44,17 @@ public:
    0 of leaf
    */
   int8_t flags;
-  /**
-   * Tree traversal
-   */
-  /**
-   * Page number of left node on same level
-   */
   BTreeNodeMem *parent;
   BTreeNodeMem *left_link;
-  /**
-   * Page number of right node on same level
-   */
   BTreeNodeMem *right_link;
   std::vector<BTreeNodeItem *> nodeItems;
 
   BTreeNodeMem() {}
-  BTreeNodeMem(int8_t flag, int level, BTreeNodeMem *parent,
-               BTreeNodeMem *left_link, BTreeNodeMem *right_link,
+  BTreeNodeMem(int8_t flag, BTreeNodeMem *parent, BTreeNodeMem *left_link,
+               BTreeNodeMem *right_link,
                std::vector<BTreeNodeItem *> nodeItems) {
     this->flags = flag;
+    this->parent = parent;
     this->left_link = left_link;
     this->right_link = right_link;
     this->nodeItems = nodeItems;
