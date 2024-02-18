@@ -93,7 +93,7 @@ bool checkInternalNodeAndSplit(BTreeNodeMem *node) {
   }
 }
 
-bool insert(BTreeNodeMem *node, std::string key, std::string value) {
+bool insertInBTree(BTreeNodeMem *node, std::string key, std::string value) {
   if (node == NULL) {
     node = insertRoot();
   }
@@ -103,12 +103,12 @@ bool insert(BTreeNodeMem *node, std::string key, std::string value) {
     std::vector<BTreeNodeItem *> &nodeItems = node->nodeItems;
     bool isSplit;
     if (keyCompare(key, nodeItems.back()->key) >= 0) {
-      isSplit = insert(nodeItems.back()->child_right, key, value);
+      isSplit = insertInBTree(nodeItems.back()->child_right, key, value);
     } else {
       // somewhere in the middle
       for (int i = 0; i < nodeItems.size(); i++) {
         if (keyCompare(key, nodeItems[i]->key) < 0) {
-          isSplit = insert(nodeItems[i]->child_left, key, value);
+          isSplit = insertInBTree(nodeItems[i]->child_left, key, value);
           break;
         }
       }
@@ -118,6 +118,13 @@ bool insert(BTreeNodeMem *node, std::string key, std::string value) {
     } else
       return false;
   }
+}
+bool insert(BTreeNodeMem *node, std::string key, std::string value, BTreeNodeMem*& root) {
+  bool res = insertInBTree(node, key, value);
+  if(node -> parent != NULL) {
+    root = node -> parent;
+  }
+  return res;
 }
 bool compareKeys(const BTreeNodeItem* a, const std::string& b) {
     return stoi(a->key) < stoi(b);

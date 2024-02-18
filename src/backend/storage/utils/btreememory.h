@@ -64,10 +64,15 @@ public:
   int getNodeMaxCapacity() { return 4; }
 };
 
-class BTree {
-  public:
-    BTreeNodeMem* root;
-};
+// class BTree {
+//   public:
+//     BTreeNodeMem* root;
+//     int8_t maxKeyInANode;
+//     BTree(int8_t maxKeyInANode) {
+//       this->root = NULL;
+//       this->maxKeyInANode = maxKeyInANode;
+//     }
+// };
 
 class BTreeSearchResult {
 public:
