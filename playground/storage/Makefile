@@ -5,9 +5,8 @@ LDFLAGS =
 # Source files
 SRC = main.cpp inmemorybtreeutils.cpp
 
-# Object files
+# Object files 
 OBJ = $(SRC:.cpp=.o)
-
 
 # Target executable
 TARGET = main

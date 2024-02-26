@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 #include <cstddef>
+#include <map>
 using namespace std::chrono;
 using namespace std;
 
@@ -10,7 +11,7 @@ std::vector<string> random_string() {
   vector<string> randoms;
   std::random_device rd;
   std::mt19937 g(rd());
-  for (int i = 1; i < 1e6; i++) {
+  for (int i = 1; i < 1e7; i++) {
     string cur = to_string(i);
     randoms.push_back(cur);
   }
@@ -25,9 +26,10 @@ int main() {
 
   vector<string> randomUniqueKeys = random_string();
   auto start = high_resolution_clock::now();
-
+  map<string, string> mp;
   for(auto to: randomUniqueKeys) {
-    insert(root, to, to, root);
+    // insert(root, to, to, root);
+    mp[to] = to;
   }
 
   auto end = high_resolution_clock::now();

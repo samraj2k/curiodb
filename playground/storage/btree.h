@@ -5,7 +5,7 @@
 #ifndef BTREE_H
 #define BTREE_H
 
-class BTreeNodeHeader {
+class NodeHeader {
 public:
   /**
    * stores whether root, internal, leaf, deleted
@@ -15,22 +15,19 @@ public:
    * 00001000 -> deleted
    * Total size: 2 byte
    */
-  std::uint16_t flags;
-  /**
-   * Tree traversal
-   */
-  PageNumber parent_link;
+  std::uint8_t flags;
   /**
    * Page number of left node on same level
    */
   PageNumber left_link;
   /**
    * Page number of right node on same level
+   * Same as of concept in B Link Tree
    */
   PageNumber right_link;
 };
 
-class BTreeNodeItemHeader {
+class NodeItemHeader {
 public:
   PageOffset start_address;
   std::uint16_t size;
@@ -38,7 +35,7 @@ public:
 
 class BTreeNodeItem {
 public:
-  BTreeNodeItemHeader header;
+  NodeItemHeader header;
   /**
    * UTF-8 representation -> 4 bytes
    */
@@ -47,6 +44,7 @@ public:
    * While writing to the disk this will not waste space
    */
   PageNumber child_left;
+
   PageNumber child_right;
   /**
    * In case of leaf node, data page number
@@ -56,7 +54,7 @@ public:
 
 class BTreeNode {
 public:
-  BTreeNodeHeader header;
+  NodeHeader header;
   std::vector<BTreeNodeItem> nodeItems;
 };
 

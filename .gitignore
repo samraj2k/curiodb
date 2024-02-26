@@ -3,6 +3,8 @@
 .vscode
 .vscode/*
 *.plist
+main
+main.yml
 
 
 # Compiled Object files
