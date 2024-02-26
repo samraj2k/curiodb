@@ -2,7 +2,7 @@
 Database built out of curiosity
 
 ## References
-
+/
     - [Efficient Locking for Concurrent Operations on B-Trees](https://www.csd.uoc.gr/~hy460/pdf/p650-lehman.pdf)
     - [Database Internals Book](https://www.databass.dev/)
     - [Postgres Docs](https://www.postgresql.org/docs/)
