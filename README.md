@@ -1,12 +1,15 @@
 # curiodb
 
-curiodb is a personal project born from a fascination with database systems.
+curiodb is a personal project born from a sense of "curio"sity and a desire to understand database systems.
 
 ## References
 
-- Efficient Locking for Concurrent Operations on B-Trees: [Link](https://dl.acm.org/doi/10.1145/319628.319663)
-- Database Internals Book: [Link](https://www.databass.dev/)
-- Postgres Docs: [Link](https://www.postgresql.org/docs/)
-- CMU Database Group: [Link](https://www.youtube.com/c/cmudatabasegroup)
-- Postgres Block Internals: [Link](https://dl.acm.org/doi/pdf/10.1145/16856.16888)
-- Fetching the next page in the heap table in postgres: [Link
+- [Efficient Locking for Concurrent Operations on B-Trees](https://www.csd.uoc.gr/~hy460/pdf/p650-lehman.pdf)
+- [Database Internals Book](https://www.databass.dev/)
+- [Postgres Docs](https://www.postgresql.org/docs/)
+- [CMU Database Group](https://www.youtube.com/@CMUDatabaseGroup)
+- [Postgres Block Internals](https://fritshoogland.wordpress.com/2017/07/01/postgresql-block-internals/)
+- [Fetching the next page in the heap table in postgres](https://stackoverflow.com/questions/78059189/fetching-the-next-page-in-the-heap-table-in-postgres)
+- [How does postgres stores varchar attribute value in heap table as tuple](https://stackoverflow.com/questions/78057222/how-does-postgres-stores-varchar-attribute-value-in-heap-table-as-tuple)
+- [The Internals of PostgreSQL](https://www.interdb.jp/pg/index.html)
+- [Discovering the Computer Science Behind Postgres Indexes](https://patshaughnessy.net/2014/11/11/discovering-the-computer-science-behind-postgres-indexes)
