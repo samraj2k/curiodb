@@ -22,4 +22,4 @@ public:
 class BtreeMetaPageData {
 public:
   BlockItemId bt_root;
-}
+};

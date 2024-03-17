@@ -1,9 +1,8 @@
 #include "inmemorybtreeutils.h"
 #include <chrono>
 #include <iostream>
-#include <random>
-#include <cstddef>
 #include <map>
+#include <random>
 using namespace std::chrono;
 using namespace std;
 
@@ -27,7 +26,7 @@ int main() {
   vector<string> randomUniqueKeys = random_string();
   auto start = high_resolution_clock::now();
   map<string, string> mp;
-  for(auto to: randomUniqueKeys) {
+  for (auto to : randomUniqueKeys) {
     // insert(root, to, to, root);
     mp[to] = to;
   }
@@ -52,7 +51,7 @@ int main() {
   // insert(root, "15", "66", root);
 
   BTreeSearchResult searchResult;
-  for(int i = 1; i < 16; i++) {
+  for (int i = 1; i < 16; i++) {
     searchExact(root, to_string(i), searchResult);
   }
   vector<BTreeSearchResult> searchResults;
