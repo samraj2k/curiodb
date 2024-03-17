@@ -1,5 +1,11 @@
 # Prerequisites
 *.d
+.vscode
+.vscode/*
+*.plist
+main
+main.yml
+
 
 # Compiled Object files
 *.slo
@@ -16,6 +22,7 @@
 *.dylib
 *.dll
 
+
 # Fortran module files
 *.mod
 *.smod
@@ -30,3 +37,4 @@
 *.exe
 *.out
 *.app
+*.dysm
