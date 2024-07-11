@@ -15,14 +15,26 @@ class BufferTag {
   BlockNumber blockNumber;
 };
 
-// Think of this as metadata of the pages cached.
-//
+enum BufferPageStatus {
+  IS_DIRTY,
+  CHECKPOINT_NEEDED,
+  IS_LOCKED,
+  IO_IN_PROGRESS
+};
+
+class BufferState {
+  uint32_t pinCount;
+  BufferPageStatus bufferPageStatus;
+};
+
 class BufferDescriptor {
+  // Tag used to determine this buffer
   BufferTag tag;
+  // Index of the buffer
   uint32_t bufferId;
   // store pin count etc.
   // implemented spin lock for modifications
-  _atomic_int32 state;
+  _atomic_var<BufferState> state;
   // implement a light weight lock/latch for concurrent buffer access below
 };
 

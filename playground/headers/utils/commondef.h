@@ -1,27 +1,27 @@
 #ifndef COMMONDEF_H
 #define COMMONDEF_H
 
-#include "../locks/spinlock.h"
+#include "./semaphore.h"
 #include <cstdint>
 
 // common identifier for all objects
 // same as postgres, but defined it 64 bit unsigned integer
 typedef uint64_t Oid;
 
-class _atomic_int32 {
+template <typename T> class AtomicVariable {
 private:
-  Spinlock spinlock;
-  // ask compiler for no optimizations
-  volatile uint32_t value;
+  Semaphore semaphore;
+  // take spin lock and modify the value
+  T value;
 
 public:
-  void modify(uint32_t newValue) {
-    spinlock.lock();
+  void modify(T newValue) {
+    semaphore.wait();
     value = newValue;
-    spinlock.unlock();
+    semaphore.post();
   }
   // access this only after lock
-  uint32_t read() { return value; }
+  T read() { return value; }
 };
 
 #endif

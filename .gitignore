@@ -38,3 +38,5 @@ main.yml
 *.out
 *.app
 *.dysm
+
+cmake-build-debug
