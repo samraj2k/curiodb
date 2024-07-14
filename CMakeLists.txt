@@ -11,4 +11,5 @@ add_executable(curiodb main.cpp
         headers/storage/buffer.h
         headers/storage/block.h
         headers/storage/lock.h
+        src/storage/buffer.cpp
 )
