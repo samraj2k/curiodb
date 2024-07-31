@@ -28,9 +28,24 @@ struct BufferDescriptor {
     MonitorRWLock contentLock;
 };
 
-using BufferMap = std::unordered_map<BufferTag, BufferId>;
 
-namespace Buffer {
+struct BufferTagHash {
+    std::size_t operator()(const BufferTag& tag) const {
+        std::string combined = std::to_string(tag.blockNumber) + "#" + std::to_string(tag.fileNumber);
+        return std::hash<std::string>{}(combined);
+    }
+};
+
+struct BufferTagEqual {
+    bool operator()(const BufferTag& lhs, const BufferTag& rhs) const {
+        return lhs.blockNumber == rhs.blockNumber && lhs.fileNumber == rhs.fileNumber;
+    }
+};
+
+using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTagHash, BufferTagEqual>;
+
+
+namespace buffer {
 
 }
 #endif //BUFFER_H

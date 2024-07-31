@@ -1,4 +1,5 @@
 #include <iostream>
+#include <gtest/gtest.h>
 #include "headers/storage/page.h"
 
 int main() {
@@ -18,4 +19,7 @@ int main() {
     last_four[totalSize] = '\0';
 
     printf("Last 4 characters: %s\n", last_four);
+
+    ::testing::InitGoogleTest();
+    return RUN_ALL_TESTS();
 }

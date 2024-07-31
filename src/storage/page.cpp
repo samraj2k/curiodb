@@ -1,7 +1,6 @@
 #include "../../headers/storage/page.h"
 #include "../../headers/storage/item.h"
 #include <cstring>
-
 #include <cassert>
 
 namespace page {
@@ -16,6 +15,17 @@ namespace page {
         pageHeader->freeSpaceStart = sizeOfHeader();
         pageHeader->freeSpaceEnd = pageHeader -> specialDataSpace;
         return page;
+    }
+
+    void initPage(Page &page, const ObjectSize specialDataLength) {
+        assert(specialDataLength < PAGE_SIZE - sizeOfHeader());
+
+        page = new char[PAGE_SIZE];
+        auto pageHeader = reinterpret_cast<PageHeader>(page);
+        // populate attributes
+        pageHeader->specialDataSpace = PAGE_SIZE - specialDataLength;
+        pageHeader->freeSpaceStart = sizeOfHeader();
+        pageHeader->freeSpaceEnd = pageHeader -> specialDataSpace;
     }
 
     void addItem(Page page, const ItemSize sizeOfItem, Item item) {
