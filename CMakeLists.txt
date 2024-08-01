@@ -24,6 +24,8 @@ add_executable(curiodb main.cpp
         src/storage/buffer.cpp
         tests/lock_test.cpp
         tests/lock_test.cpp
+        headers/storage/io.h
+        src/storage/io.cpp
 )
 
 target_link_libraries(curiodb gtest gtest_main)

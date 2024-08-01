@@ -12,19 +12,29 @@
 #include "lock.h"
 
 using BufferId = unsigned int;
-// 128 KB for 8KB buffer
+// 128 MB for 8KB buffer
 constexpr int BUFFER_SLOTS = 16000;
 
 struct BufferTag {
     BlockNumber blockNumber;
-    unsigned int fileNumber;
+    uint64_t fileNumber;
 };
 
 struct BufferDescriptor {
+    BufferDescriptor(const BufferTag &tag, BufferId id)
+        : tag(tag),
+          id(id),
+          pinCount(0),
+          usageCount(0),
+          isDirty(false),
+          contentLock() {
+    }
+
     BufferTag tag;
     BufferId id;
     std::atomic<unsigned int> pinCount;
-    bool isDirty;
+    std::atomic<unsigned int> usageCount;
+    std::atomic<bool> isDirty;
     MonitorRWLock contentLock;
 };
 
@@ -46,6 +56,11 @@ using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTagHash, BufferT
 
 
 namespace buffer {
+    void writeToDisk(BufferId bufferId);
 
+    inline void pin(BufferDescriptor* bufferDesc) {
+        ++bufferDesc->pinCount;
+        ++bufferDesc->usageCount;
+    }
 }
 #endif //BUFFER_H

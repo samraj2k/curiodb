@@ -12,8 +12,6 @@ using PageOffset = std::uint16_t;
 
 using Page = char*;
 
-const ObjectSize PAGE_SIZE = 1024 * 8;
-
 struct ItemIdData {
     PageOffset dataOffset;;  // offset to tuple (from start of page)
     ItemSize dataLength;  // byte length of tuple
