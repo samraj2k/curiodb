@@ -8,12 +8,12 @@
 #include <atomic>
 #include <unordered_map>
 
+#include "../configs/constants.h"
 #include "block.h"
 #include "lock.h"
 
 using BufferId = unsigned int;
 // 128 MB for 8KB buffer
-constexpr int BUFFER_SLOTS = 16000;
 
 struct BufferTag {
     BlockNumber blockNumber;
@@ -56,7 +56,10 @@ using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTagHash, BufferT
 using BufferDescriptors = std::vector<BufferDescriptor*>;
 
 namespace buffer {
-    void writeToDisk(BufferId bufferId);
+
+    void initBuffer();
+    BufferId readBuffer(const BufferTag &tag);
+    void releaseBuffer(BufferId bufferId);
 
     inline void pin(BufferDescriptor* bufferDesc) {
         ++bufferDesc->pinCount;
