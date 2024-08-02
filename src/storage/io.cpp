@@ -8,7 +8,7 @@
 #include <string>
 
 namespace io {
-    Page loadPageFromDisk(BlockNumber blockNumber, std::uint64_t fileNumber) {
+    Page loadPageFromDisk(const BlockNumber blockNumber, const std::uint64_t fileNumber) {
         uint64_t fileNumberSuffix = blockNumber / BLOCKS_PER_FILE;
         uint64_t pageNumber = blockNumber % BLOCKS_PER_FILE;
         uint64_t pageOffset = pageNumber * PAGE_SIZE;

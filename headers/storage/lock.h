@@ -7,35 +7,33 @@
 #include <condition_variable>
 
 
-struct MonitorRWLock {
+struct ReadWriteLock {
     std::mutex mtx;
     std::atomic_bool isWriterWaiting{false};
     int readerCount{0};
     std::atomic_bool isWriteLocked{false};
     std::condition_variable readCv;
     std::condition_variable writeCv;
-
 };
 
 namespace lock {
-    inline void getReadLock(MonitorRWLock& lock) {
+    inline void getReadLock(ReadWriteLock& lock) {
         std::unique_lock lck(lock.mtx);
         lock.readCv.wait(lck, [&lock] { return !lock.isWriteLocked && !lock.isWriterWaiting; });
         ++lock.readerCount;
     }
 
-    inline void releaseReadLock(MonitorRWLock& lock) {
+    inline void releaseReadLock(ReadWriteLock& lock) {
         std::unique_lock lck(lock.mtx);
         --lock.readerCount;
         if(lock.isWriterWaiting) {
             lock.writeCv.notify_one();
-        }
-        else {
+        } else {
             lock.readCv.notify_all();
         }
     }
 
-    inline void getWriteLock(MonitorRWLock& lock) {
+    inline void getWriteLock(ReadWriteLock& lock) {
         std::unique_lock lck(lock.mtx);
         lock.isWriterWaiting = true;
         lock.writeCv.wait(lck, [&lock] { return lock.readerCount == 0 && !lock.isWriteLocked; });
@@ -43,7 +41,7 @@ namespace lock {
         lock.isWriteLocked = true;
     }
 
-    inline void releaseWriteLock(MonitorRWLock& lock) {
+    inline void releaseWriteLock(ReadWriteLock& lock) {
         std::unique_lock lck(lock.mtx);
         lock.isWriteLocked = false;
         lock.readCv.notify_all();

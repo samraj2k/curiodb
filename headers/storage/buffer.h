@@ -35,7 +35,7 @@ struct BufferDescriptor {
     std::atomic<unsigned int> pinCount;
     std::atomic<unsigned int> usageCount;
     std::atomic<bool> isDirty;
-    MonitorRWLock contentLock;
+    ReadWriteLock contentLock;
 };
 
 
@@ -53,7 +53,7 @@ struct BufferTagEqual {
 };
 
 using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTagHash, BufferTagEqual>;
-
+using BufferDescriptors = std::vector<BufferDescriptor*>;
 
 namespace buffer {
     void writeToDisk(BufferId bufferId);
@@ -61,6 +61,17 @@ namespace buffer {
     inline void pin(BufferDescriptor* bufferDesc) {
         ++bufferDesc->pinCount;
         ++bufferDesc->usageCount;
+    }
+
+    inline void unpin(BufferDescriptor* bufferDesc) {
+        --bufferDesc->pinCount;
+    }
+
+    inline bool isValidBuffer(BufferId bufferId) {
+        if(bufferId >= BUFFER_SLOTS) {
+            return false;
+        }
+        return true;
     }
 }
 #endif //BUFFER_H

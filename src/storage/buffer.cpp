@@ -3,18 +3,16 @@
 //
 
 #include "../../headers/storage/buffer.h"
-
-#include <cassert>
-
 #include "../../headers/storage/page.h"
 #include "../../headers/storage/io.h"
+
 #include <vector>
-#include <list>
+#include <cassert>
 
 static BufferMap bufferMap;
-static std::vector<BufferDescriptor*> bufferDescriptors(BUFFER_SLOTS);
+static BufferDescriptors bufferDescriptors(BUFFER_SLOTS);
 static std::vector<Page> bufferPool(BUFFER_SLOTS);
-static MonitorRWLock bufferMapLock;
+static ReadWriteLock bufferMapLock;
 static BufferId victimBuffer;
 
 namespace buffer {
@@ -84,7 +82,7 @@ namespace buffer {
         return bufferDescriptors[evictedBuffer];
     }
 
-    BufferDescriptor* readBuffer(const BufferTag &tag) {
+    BufferId readBuffer(const BufferTag &tag) {
         lock::getReadLock(bufferMapLock);
         BufferDescriptor* bufferDesc = getBufferDesc(tag);
         if(bufferDesc != nullptr) {
@@ -92,7 +90,7 @@ namespace buffer {
             ++bufferDesc->pinCount;
             ++bufferDesc->usageCount;
             lock::releaseReadLock(bufferMapLock);
-            return bufferDesc;
+            return bufferDesc->id;
         }
         lock::releaseReadLock(bufferMapLock);
 
@@ -103,7 +101,7 @@ namespace buffer {
             // buffer found
             pin(bufferDesc);
             lock::releaseWriteLock(bufferMapLock);
-            return bufferDesc;
+            return bufferDesc->id;
         }
 
         // if still not found, then we need to read from disk
@@ -120,10 +118,18 @@ namespace buffer {
 
         if(!bufferIO(bufferDesc)) {
             // handle read error
-            return nullptr;
+            return NULL;
         }
         lock::releaseWriteLock(bufferDesc->contentLock);
-        return bufferDesc;
+        return bufferDesc->id;
+    }
+
+    void releaseBuffer(BufferId bufferId) {
+        // must have been pinned already
+        // cannot be evicted
+        assert(isValidBuffer(bufferId));
+        BufferDescriptor* bufferDesc = bufferDescriptors[bufferId];
+        unpin(bufferDesc);
     }
 
 }

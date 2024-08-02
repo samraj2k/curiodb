@@ -6,7 +6,7 @@
 
 class MonitorRWLockTest : public ::testing::Test {
 protected:
-    MonitorRWLock rwLock;
+    ReadWriteLock rwLock;
 };
 
 TEST_F(MonitorRWLockTest, MultipleReadersNoWriter) {
