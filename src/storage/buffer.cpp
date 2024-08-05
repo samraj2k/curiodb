@@ -4,6 +4,7 @@
 
 #include "../../headers/storage/buffer.h"
 #include "../../headers/io/io.h"
+#include "../../headers/io/bgwriter.h"
 
 #include <vector>
 #include <cassert>
@@ -12,7 +13,7 @@ static BufferMap bufferMap;
 static BufferDescriptors bufferDescriptors(BUFFER_SLOTS);
 static std::vector<Page> bufferPool(BUFFER_SLOTS);
 static ReadWriteLock bufferMapLock;
-static BufferId victimBuffer;
+static BufferId victimBuffer = 0;
 
 namespace buffer {
 
@@ -20,6 +21,9 @@ namespace buffer {
         lock::getWriteLock(bufferMapLock);
         bufferMap.reserve(BUFFER_SLOTS);
         lock::releaseWriteLock(bufferMapLock);
+        // start bgwriter thread which will flush dirty page
+        // this will decrease the load from evict() method
+        io::startBgWriter(bufferDescriptors, victimBuffer, bufferPool);
     }
 
     void dirtyBufferFlushIO(BufferDescriptor* bufferDescriptor) {
