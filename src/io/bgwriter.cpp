@@ -34,20 +34,22 @@ namespace bgwriter {
                 if (bufferDesc->isDirty.load()) {
                     try {
                         io::writePageToDisk(bufferPool[currentBuffer],
-                        bufferDesc->tag.blockNumber,
-                        bufferDesc->tag.fileNumber);
+                            bufferDesc->tag.blockNumber,
+                            bufferDesc->tag.fileNumber);
+
+                        bufferDesc->isDirty.store(false);
+
                     } catch (const std::exception& e) {
                         std::cerr << "Error for:" << bufferDesc->tag.blockNumber << " " << bufferDesc->tag.fileNumber;
                         std::cerr << std::endl;
                         std::cerr << "Error writing page to disk: " << e.what() << std::endl;
                     }
-
-                    bufferDesc->isDirty.store(false);
                     ++flushedPages;
                 }
 
                 lock::releaseWriteLock(bufferDesc->contentLock);
             }
+
             buffer::unpin(bufferDesc);
 
             currentBuffer = (currentBuffer + 1) % BUFFER_SLOTS;
