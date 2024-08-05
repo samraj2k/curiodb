@@ -3,8 +3,7 @@
 //
 
 #include "../../headers/storage/buffer.h"
-#include "../../headers/storage/page.h"
-#include "../../headers/storage/io.h"
+#include "../../headers/io/io.h"
 
 #include <vector>
 #include <cassert>
@@ -27,20 +26,20 @@ namespace buffer {
         io::writePageToDisk(bufferPool[victimBuffer],
                         bufferDescriptors[victimBuffer]->tag.blockNumber,
                         bufferDescriptors[victimBuffer]->tag.fileNumber);
-        bufferDescriptor->isDirty = false;
+        bufferDescriptor->isDirty.store(false);
     }
 
     BufferId evictBuffer() {
         // for now this is called by taking lock on the map
         // but very inefficient, once the program is up and running, TODO: refactor
-        BufferId currentVictim = victimBuffer;
+        const BufferId currentVictim = victimBuffer;
         while(true) {
             if(bufferDescriptors[victimBuffer] == nullptr) {
                 // empty buffer, return directly
                 break;
             }
             if(!bufferDescriptors[victimBuffer]->pinCount.load()) {
-                if(bufferDescriptors[victimBuffer]->isDirty) {
+                if(bufferDescriptors[victimBuffer]->isDirty.load()) {
                     dirtyBufferFlushIO(bufferDescriptors[victimBuffer]);
                     
                     // separate process will write to disk
@@ -61,7 +60,7 @@ namespace buffer {
         return currentVictim;
     }
 
-    bool bufferLoadIO(BufferDescriptor* bufferDesc) {
+    bool bufferLoadIO(const BufferDescriptor* bufferDesc) {
         assert(bufferDesc->contentLock.isWriteLocked.load());
         BufferTag tag = bufferDesc->tag;
         Page page = io::loadPageFromDisk(tag.blockNumber, tag.fileNumber);

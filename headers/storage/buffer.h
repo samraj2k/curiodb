@@ -62,12 +62,12 @@ namespace buffer {
     void releaseBuffer(BufferId bufferId);
 
     inline void pin(BufferDescriptor* bufferDesc) {
-        ++bufferDesc->pinCount;
-        ++bufferDesc->usageCount;
+        bufferDesc->pinCount.store(bufferDesc->pinCount.load() + 1, std::memory_order_relaxed);
+        bufferDesc->usageCount.store(bufferDesc->usageCount.load() + 1, std::memory_order_relaxed);
     }
 
     inline void unpin(BufferDescriptor* bufferDesc) {
-        --bufferDesc->pinCount;
+        bufferDesc->pinCount.store(bufferDesc->pinCount.load() - 1, std::memory_order_relaxed);
     }
 
     inline bool isValidBuffer(BufferId bufferId) {

@@ -4,8 +4,8 @@
 
 #ifndef IO_H
 #define IO_H
-#include "block.h"
-#include "page.h"
+#include "../storage/page.h"
+#include "../storage/block.h"
 
 namespace io {
     Page loadPageFromDisk(BlockNumber blockNumber, std::uint64_t fileNumber);
