@@ -23,15 +23,26 @@ namespace buffer {
         lock::releaseWriteLock(bufferMapLock);
     }
 
+    void dirtyBufferFlushIO(BufferDescriptor* bufferDescriptor) {
+        io::writePageToDisk(bufferPool[victimBuffer],
+                        bufferDescriptors[victimBuffer]->tag.blockNumber,
+                        bufferDescriptors[victimBuffer]->tag.fileNumber);
+        bufferDescriptor->isDirty = false;
+    }
+
     BufferId evictBuffer() {
-        // TODO: implement freeList
+        // for now this is called by taking lock on the map
+        // but very inefficient, once the program is up and running, TODO: refactor
         BufferId currentVictim = victimBuffer;
         while(true) {
             if(bufferDescriptors[victimBuffer] == nullptr) {
+                // empty buffer, return directly
                 break;
             }
             if(!bufferDescriptors[victimBuffer]->pinCount.load()) {
                 if(bufferDescriptors[victimBuffer]->isDirty) {
+                    dirtyBufferFlushIO(bufferDescriptors[victimBuffer]);
+                    
                     // separate process will write to disk
                     // for now skip this
                 } else if (!bufferDescriptors[victimBuffer]->usageCount.load()) {
@@ -45,11 +56,12 @@ namespace buffer {
         // set victim buffer to next one for future
         victimBuffer = (victimBuffer + 1) % BUFFER_SLOTS;
         bufferMap.erase(bufferDescriptors[victimBuffer]->tag);
+        delete bufferPool[victimBuffer];
         delete bufferDescriptors[victimBuffer];
         return currentVictim;
     }
 
-    bool bufferIO(BufferDescriptor* bufferDesc) {
+    bool bufferLoadIO(BufferDescriptor* bufferDesc) {
         assert(bufferDesc->contentLock.isWriteLocked.load());
         BufferTag tag = bufferDesc->tag;
         Page page = io::loadPageFromDisk(tag.blockNumber, tag.fileNumber);
@@ -69,7 +81,7 @@ namespace buffer {
         return nullptr;
     }
 
-    BufferDescriptor* loadBuffer(const BufferTag &tag) {
+    BufferDescriptor* retrieveBuffer(const BufferTag &tag) {
         assert(bufferMapLock.isWriteLocked);
         BufferId evictedBuffer = evictBuffer();
         // this operation is only perfomed when bufferMap is write locked
@@ -94,6 +106,7 @@ namespace buffer {
         }
         lock::releaseReadLock(bufferMapLock);
 
+        // TODO: poor design, need to refactor
         lock::getWriteLock(bufferMapLock);
         // maybe while leaving the lock, the buffer got filled
         bufferDesc = getBufferDesc(tag);
@@ -108,7 +121,7 @@ namespace buffer {
         // two scene: 1. buffer is empty 2. buffer is full
         // if buffer is empty, then we can directly read from disk
         // if buffer is full, then we need to evict a buffer, then load from disk
-        bufferDesc = loadBuffer(tag);
+        bufferDesc = retrieveBuffer(tag);
         pin(bufferDesc);
         // take lock on content since we will do IO
         lock::getWriteLock(bufferDesc->contentLock);
@@ -116,7 +129,7 @@ namespace buffer {
         // the incoming reads on this buffer will be blocked due to above taken write lock
         lock::releaseWriteLock(bufferMapLock);
 
-        if(!bufferIO(bufferDesc)) {
+        if(!bufferLoadIO(bufferDesc)) {
             // handle read error
             return NULL;
         }

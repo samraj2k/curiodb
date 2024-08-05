@@ -4,12 +4,12 @@
 #include <atomic>
 #include "../headers/storage/lock.h"
 
-class MonitorRWLockTest : public ::testing::Test {
+class ReadWriteLockTest : public ::testing::Test {
 protected:
     ReadWriteLock rwLock;
 };
 
-TEST_F(MonitorRWLockTest, MultipleReadersNoWriter) {
+TEST_F(ReadWriteLockTest, MultipleReadersNoWriter) {
     constexpr int numReaders = 5;
     std::atomic readCount(0);
 
@@ -30,7 +30,7 @@ TEST_F(MonitorRWLockTest, MultipleReadersNoWriter) {
     }
 }
 
-TEST_F(MonitorRWLockTest, WriterExclusivity) {
+TEST_F(ReadWriteLockTest, WriterExclusivity) {
     std::atomic<bool> writerActive(false);
     std::atomic<int> readCount(0);
 
@@ -61,7 +61,7 @@ TEST_F(MonitorRWLockTest, WriterExclusivity) {
     }
 }
 
-TEST_F(MonitorRWLockTest, WriterPriority) {
+TEST_F(ReadWriteLockTest, WriterPriority) {
     std::atomic<bool> writerActive(false);
     std::atomic<int> readCount(0);
 

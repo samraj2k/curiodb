@@ -9,5 +9,6 @@
 
 namespace io {
     Page loadPageFromDisk(BlockNumber blockNumber, std::uint64_t fileNumber);
+    void writePageToDisk(Page page, BlockNumber blockNumber, std::uint64_t fileNumber);
 }
 #endif //IO_H
