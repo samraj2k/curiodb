@@ -10,7 +10,6 @@
 #include <thread>
 #include <chrono>
 
-
 namespace bgwriter {
 
     void flushDirtyPages(const BufferDescriptors& bufferDescriptors,
@@ -28,8 +27,8 @@ namespace bgwriter {
             // pin buffer, so does not get evicted
             buffer::pin(bufferDesc);
             if (bufferDesc->isDirty.load()) {
-                // since write lock taken, no one can write to this buffer
-                lock::getWriteLock(bufferDesc->contentLock);
+                // since read lock taken, no one can write to this buffer
+                lock::getReadLock(bufferDesc->contentLock);
 
                 if (bufferDesc->isDirty.load()) {
                     try {
@@ -47,7 +46,7 @@ namespace bgwriter {
                     ++flushedPages;
                 }
 
-                lock::releaseWriteLock(bufferDesc->contentLock);
+                lock::releaseReadLock(bufferDesc->contentLock);
             }
 
             buffer::unpin(bufferDesc);
