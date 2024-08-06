@@ -2,54 +2,56 @@
 #define PAGE_H
 
 #include <cstdint>
-#include <vector>
 #include "item.h"
+#include "configs/constants.h"
 
-namespace Page {
-    // A page is a block of memory that is used to store data
-    // Suppose it is 8 KB, so a char pointer having 1024 * 8 bytes
-    using PageNumber = std::uint32_t;
-    using PageOffset = std::uint16_t;
-    using TupleLength = std::uint16_t;
+// A page is a block of memory that is used to store data
+// Suppose it is 8 KB, so a char pointer having 1024 * 8 bytes
 
-    using Page = char*;
+using PageOffset = std::uint16_t;
 
-    const size_t PAGE_SIZE = 1024 * 8;
+using Page = char*;
 
-    struct ItemIdData {
-        PageOffset data_offset;;  // offset to tuple (from start of page)
-        TupleLength data_length;  // byte length of tuple
-    };
+struct ItemIdData {
+    PageOffset dataOffset;;  // offset to tuple (from start of page)
+    ItemSize dataLength;  // byte length of tuple
+};
 
-    struct PageHeaderData {
-        PageOffset free_space_start;
-        PageOffset free_space_end;
-        PageOffset special_data_space;
-        ItemIdData itemIds[];
-    };
-    using PageHeader = PageHeaderData*;
+struct PageHeaderData {
+    PageOffset freeSpaceStart;
+    PageOffset freeSpaceEnd;
+    PageOffset specialDataSpace;
+    ItemIdData itemIds[];
+};
+using PageHeader = PageHeaderData*;
 
+namespace page {
 
-    inline size_t sizeOfHeader() {
+    inline ObjectSize sizeOfHeader() {
         return sizeof(PageHeaderData);
+    }
+
+    inline ObjectSize sizeOfItemIdData() {
+        return sizeof(ItemIdData);
     }
 
     inline uint16_t numOfItems(Page page) {
         auto header = (PageHeader)page;
-        return (header->free_space_start - sizeOfHeader()) / sizeof(ItemIdData);
+        return (header->freeSpaceStart - sizeOfHeader()) / sizeof(ItemIdData);
     }
 
     inline uint16_t getEmptySpace(Page page) {
         auto header = (PageHeader)page;
-        return header->free_space_end - header->free_space_start;
+        return header->freeSpaceEnd - header->freeSpaceStart;
     }
 
-    inline bool isAddable(Page page, size_t size_of_item) {
-        return getEmptySpace(page) + sizeof(ItemIdData) >= size_of_item;
+    inline bool isAddable(Page page, size_t sizeOfItem) {
+        return getEmptySpace(page) + sizeof(ItemIdData) >= sizeOfItem;
     }
 
-    Page initPage(size_t special_data_length);
-    void addItem(Page page, ItemSize size_of_item, Item item);
+    Page initPage(ObjectSize specialDataLength);
+    void addItem(Page page, ItemSize sizeOfItem, Item item);
+
 }
 
 #endif //PAGE_H

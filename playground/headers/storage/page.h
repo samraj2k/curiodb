@@ -26,7 +26,7 @@ public:
   /**
    * Page number of left node on same level
    */
-  PageOffset free_space_start;
+  PageOffset freeSpaceStart;
 
   PageOffset free_space_end;
 
