@@ -3,7 +3,6 @@
 //
 #include "io/io.h"
 #include "configs/constants.h"
-#include <fstream>
 
 #include <string>
 #include <sys/mman.h>
