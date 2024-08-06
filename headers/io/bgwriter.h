@@ -5,12 +5,11 @@
 #ifndef BGWRITER_H
 #define BGWRITER_H
 
-#include "../storage/buffer.h"
-#include "../storage/page.h"
+#include "storage/buffer.h"
+#include "storage/page.h"
 
 namespace io {
-    void startBgWriter(const BufferDescriptors& bufferDescriptors,
-       BufferId victimBuffer,
-       const std::vector<Page>& bufferPool);
+    void startBgWriter(const BufferDescriptors& bufferDescriptors, BufferId victimBuffer,
+        const std::vector<Page>& bufferPool);
 }
 #endif //BGWRITER_H

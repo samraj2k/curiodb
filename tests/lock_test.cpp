@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 #include <atomic>
-#include "../headers/storage/lock.h"
+#include "lock/lock.h"
 
 class ReadWriteLockTest : public ::testing::Test {
 protected:
@@ -17,11 +17,11 @@ TEST_F(ReadWriteLockTest, MultipleReadersNoWriter) {
     readers.reserve(numReaders);
     for (int i = 0; i < numReaders; ++i) {
         readers.emplace_back([this, &readCount, numReaders]() {
-            lock::getReadLock(rwLock);
+            rwLock.getReadLock();
             ++readCount;
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
             EXPECT_EQ(readCount.load(), numReaders);
-            lock::releaseReadLock(rwLock);
+            rwLock.releaseReadLock();
         });
     }
 
@@ -35,22 +35,22 @@ TEST_F(ReadWriteLockTest, WriterExclusivity) {
     std::atomic<int> readCount(0);
 
     std::thread writer([this, &writerActive]() {
-        lock::getWriteLock(rwLock);
+        rwLock.getWriteLock();
         writerActive = true;
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
         writerActive = false;
-        lock::releaseWriteLock(rwLock);
+        rwLock.releaseWriteLock();
     });
 
     std::vector<std::thread> readers;
     readers.reserve(3);
     for (int i = 0; i < 3; ++i) {
         readers.emplace_back([this, &writerActive, &readCount]() {
-            lock::getReadLock(rwLock);
+            rwLock.getReadLock();
             ++readCount;
             EXPECT_FALSE(writerActive);
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            lock::releaseReadLock(rwLock);
+            rwLock.releaseReadLock();
             --readCount;
         });
     }
@@ -67,22 +67,22 @@ TEST_F(ReadWriteLockTest, WriterPriority) {
 
     std::thread writer([this, &writerActive]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        lock::getWriteLock(rwLock);
+        rwLock.getWriteLock();
         writerActive = true;
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         writerActive = false;
-        lock::releaseWriteLock(rwLock);
+        rwLock.releaseWriteLock();
     });
 
     std::vector<std::thread> readers;
     readers.reserve(5);
     for (int i = 0; i < 5; ++i) {
         readers.emplace_back([this, &writerActive, &readCount]() {
-            lock::getReadLock(rwLock);
+            rwLock.getReadLock();
             ++readCount;
             EXPECT_FALSE(writerActive);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            lock::releaseReadLock(rwLock);
+            rwLock.releaseReadLock();
             --readCount;
         });
     }

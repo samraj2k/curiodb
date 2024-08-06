@@ -3,13 +3,20 @@ project(curiodb)
 
 set(CMAKE_CXX_STANDARD 20)
 
-# Add Google Test
+
 include(FetchContent)
 FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
 )
-FetchContent_MakeAvailable(googletest)
+
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.12.0
+)
+
+FetchContent_MakeAvailable(googletest spdlog)
 
 enable_testing()
 
@@ -20,7 +27,7 @@ add_executable(curiodb main.cpp
         headers/configs/constants.h
         headers/storage/buffer.h
         headers/storage/block.h
-        headers/storage/lock.h
+        headers/lock/lock.h
         src/storage/buffer.cpp
         tests/lock_test.cpp
         tests/lock_test.cpp
@@ -30,5 +37,6 @@ add_executable(curiodb main.cpp
         src/io/bgwriter.cpp
 )
 
-target_link_libraries(curiodb gtest gtest_main)
+target_link_libraries(curiodb gtest gtest_main spdlog::spdlog)
+include_directories(${CMAKE_SOURCE_DIR}/headers)
 target_include_directories(curiodb PRIVATE ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})

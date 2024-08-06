@@ -2,15 +2,16 @@
 // Created by Sameer Raj on 05/08/24.
 //
 
-#include "../../headers/io/bgwriter.h"
-#include "../../headers/io/io.h"
-#include "../../headers/configs/constants.h"
+#include "io/bgwriter.h"
+#include "io/io.h"
+#include "configs/constants.h"
 
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <spdlog/spdlog.h>
 
-namespace bgwriter {
+namespace io {
 
     void flushDirtyPages(const BufferDescriptors& bufferDescriptors,
                         const BufferId victimBuffer,
@@ -28,7 +29,7 @@ namespace bgwriter {
             buffer::pin(bufferDesc);
             if (bufferDesc->isDirty.load()) {
                 // since read lock taken, no one can write to this buffer
-                lock::getReadLock(bufferDesc->contentLock);
+                bufferDesc->contentLock.getReadLock();
 
                 if (bufferDesc->isDirty.load()) {
                     try {
@@ -39,14 +40,15 @@ namespace bgwriter {
                         bufferDesc->isDirty.store(false);
 
                     } catch (const std::exception& e) {
-                        std::cerr << "Error for:" << bufferDesc->tag.blockNumber << " " << bufferDesc->tag.fileNumber;
-                        std::cerr << std::endl;
-                        std::cerr << "Error writing page to disk: " << e.what() << std::endl;
+                        spdlog::error("Error writing page to disk for block {} in file {}: {}",
+                                      bufferDesc->tag.blockNumber,
+                                      bufferDesc->tag.fileNumber,
+                                      e.what());
                     }
                     ++flushedPages;
                 }
 
-                lock::releaseReadLock(bufferDesc->contentLock);
+                bufferDesc->contentLock.releaseReadLock();
             }
 
             buffer::unpin(bufferDesc);
@@ -55,19 +57,16 @@ namespace bgwriter {
         }
     }
 
-    void bgWriterThread(const BufferDescriptors& bufferDescriptors,
-        const BufferId victimBuffer,
+    void startBgWriter(const BufferDescriptors& bufferDescriptors, BufferId victimBuffer,
         const std::vector<Page>& bufferPool) {
-        while (true) {
-            flushDirtyPages(bufferDescriptors, victimBuffer, bufferPool);
-            std::this_thread::sleep_for(std::chrono::milliseconds(BG_WRITER_INTERVAL));
-        }
-    }
-
-    void startBgWriter(const BufferDescriptors& bufferDescriptors,
-        BufferId victimBuffer,
-        const std::vector<Page>& bufferPool) {
-        std::thread bgWriter(bgWriterThread, bufferDescriptors, victimBuffer, bufferPool);
+        // std::thread bgWriter(bgWriterThread, bufferDescriptors, victimBuffer, bufferPool);
+        auto bgWriterLambda = [&]() {
+            while (true) {
+                flushDirtyPages(bufferDescriptors, victimBuffer, bufferPool);
+                std::this_thread::sleep_for(std::chrono::milliseconds(BG_WRITER_INTERVAL));
+            }
+        };
+        std::thread bgWriter(bgWriterLambda);
         bgWriter.detach();
     }
 

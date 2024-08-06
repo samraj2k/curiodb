@@ -1,5 +1,5 @@
-#include "../../headers/storage/page.h"
-#include "../../headers/storage/item.h"
+#include "storage/page.h"
+#include "storage/item.h"
 #include <cstring>
 #include <cassert>
 

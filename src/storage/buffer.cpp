@@ -2,9 +2,9 @@
 // Created by Sameer Raj on 15/07/24.
 //
 
-#include "../../headers/storage/buffer.h"
-#include "../../headers/io/io.h"
-#include "../../headers/io/bgwriter.h"
+#include "storage/buffer.h"
+#include "io/io.h"
+#include "io/bgwriter.h"
 
 #include <vector>
 #include <cassert>
@@ -18,9 +18,9 @@ static BufferId victimBuffer = 0;
 namespace buffer {
 
     void initBufferMap() {
-        lock::getWriteLock(bufferMapLock);
+        bufferMapLock.getWriteLock();
         bufferMap.reserve(BUFFER_SLOTS);
-        lock::releaseWriteLock(bufferMapLock);
+        bufferMapLock.releaseWriteLock();
         // start bgwriter thread which will flush dirty page
         // this will decrease the load from evict() method
         io::startBgWriter(bufferDescriptors, victimBuffer, bufferPool);
@@ -98,25 +98,25 @@ namespace buffer {
     }
 
     BufferId readBuffer(const BufferTag &tag) {
-        lock::getReadLock(bufferMapLock);
+        bufferMapLock.getReadLock();
         BufferDescriptor* bufferDesc = getBufferDesc(tag);
         if(bufferDesc != nullptr) {
             // buffer found
             ++bufferDesc->pinCount;
             ++bufferDesc->usageCount;
-            lock::releaseReadLock(bufferMapLock);
+            bufferMapLock.releaseReadLock();
             return bufferDesc->id;
         }
-        lock::releaseReadLock(bufferMapLock);
+        bufferMapLock.releaseReadLock();
 
         // TODO: poor design, need to refactor
-        lock::getWriteLock(bufferMapLock);
+        bufferMapLock.getWriteLock();
         // maybe while leaving the lock, the buffer got filled
         bufferDesc = getBufferDesc(tag);
         if(bufferDesc != nullptr) {
             // buffer found
             pin(bufferDesc);
-            lock::releaseWriteLock(bufferMapLock);
+            bufferMapLock.releaseWriteLock();
             return bufferDesc->id;
         }
 
@@ -127,16 +127,16 @@ namespace buffer {
         bufferDesc = retrieveBuffer(tag);
         pin(bufferDesc);
         // take lock on content since we will do IO
-        lock::getWriteLock(bufferDesc->contentLock);
+        bufferDesc->contentLock.getWriteLock();
         // release write lock on bufferMap, no longer required
         // the incoming reads on this buffer will be blocked due to above taken write lock
-        lock::releaseWriteLock(bufferMapLock);
+        bufferMapLock.releaseWriteLock();
 
         if(!bufferLoadIO(bufferDesc)) {
             // handle read error
             return NULL;
         }
-        lock::releaseWriteLock(bufferDesc->contentLock);
+        bufferDesc->contentLock.releaseWriteLock();
         return bufferDesc->id;
     }
 

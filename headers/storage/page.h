@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include "item.h"
-#include "../configs/constants.h"
+#include "configs/constants.h"
 
 // A page is a block of memory that is used to store data
 // Suppose it is 8 KB, so a char pointer having 1024 * 8 bytes

@@ -1,8 +1,8 @@
 //
 // Created by Sameer Raj on 02/08/24.
 //
-#include "../../headers/io/io.h"
-#include "../../headers/configs/constants.h"
+#include "io/io.h"
+#include "configs/constants.h"
 #include <fstream>
 
 #include <string>

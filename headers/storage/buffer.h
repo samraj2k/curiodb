@@ -8,9 +8,9 @@
 #include <atomic>
 #include <unordered_map>
 
-#include "../configs/constants.h"
+#include "configs/constants.h"
 #include "block.h"
-#include "lock.h"
+#include "lock/lock.h"
 
 using BufferId = unsigned int;
 // 128 MB for 8KB buffer
@@ -18,16 +18,23 @@ using BufferId = unsigned int;
 struct BufferTag {
     BlockNumber blockNumber;
     uint64_t fileNumber;
+
+    bool operator==(const BufferTag& other) const {
+        return blockNumber == other.blockNumber && fileNumber == other.fileNumber;
+    }
+
+    struct Hash {
+        std::size_t operator()(const BufferTag& tag) const {
+            std::string combined = std::to_string(tag.blockNumber) + "#" + std::to_string(tag.fileNumber);
+            return std::hash<std::string>{}(combined);
+        }
+    };
 };
 
 struct BufferDescriptor {
-    BufferDescriptor(const BufferTag &tag, BufferId id)
+    BufferDescriptor(const BufferTag &tag, const BufferId id)
         : tag(tag),
-          id(id),
-          pinCount(0),
-          usageCount(0),
-          isDirty(false),
-          contentLock() {
+          id(id) {
     }
 
     BufferTag tag;
@@ -38,21 +45,7 @@ struct BufferDescriptor {
     ReadWriteLock contentLock;
 };
 
-
-struct BufferTagHash {
-    std::size_t operator()(const BufferTag& tag) const {
-        std::string combined = std::to_string(tag.blockNumber) + "#" + std::to_string(tag.fileNumber);
-        return std::hash<std::string>{}(combined);
-    }
-};
-
-struct BufferTagEqual {
-    bool operator()(const BufferTag& lhs, const BufferTag& rhs) const {
-        return lhs.blockNumber == rhs.blockNumber && lhs.fileNumber == rhs.fileNumber;
-    }
-};
-
-using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTagHash, BufferTagEqual>;
+using BufferMap = std::unordered_map<BufferTag, BufferId, BufferTag::Hash>;
 using BufferDescriptors = std::vector<BufferDescriptor*>;
 
 namespace buffer {
