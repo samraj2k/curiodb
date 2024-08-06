@@ -6,6 +6,9 @@
 #include <fstream>
 
 #include <string>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 namespace io {
 
@@ -15,21 +18,22 @@ namespace io {
         const uint64_t pageOffset = pageNumber * PAGE_SIZE;
         const std::string fileName = std::to_string(fileNumber) + "_" + std::to_string(fileNumberSuffix);
 
-        std::ifstream file(fileName, std::ios::binary);
-        if (!file) {
+        int fd = open(fileName.c_str(), O_RDONLY);
+        if (fd == -1) {
+            return nullptr;
+        }
+
+        void* mappedFile = mmap(nullptr, PAGE_SIZE, PROT_READ, MAP_PRIVATE, fd, pageOffset);
+        if (mappedFile == MAP_FAILED) {
+            close(fd);
             return nullptr;
         }
 
         Page page = new char[PAGE_SIZE];
-        file.seekg(pageOffset);
-        file.read(page, PAGE_SIZE);
+        std::memcpy(page, mappedFile, PAGE_SIZE);
 
-        if (!file) {
-            // Handle read error
-            delete[] page;
-            return nullptr;
-        }
-        file.close();
+        munmap(mappedFile, PAGE_SIZE);
+        close(fd);
         return page;
     }
 
@@ -39,24 +43,30 @@ namespace io {
         const uint64_t pageOffset = pageNumber * PAGE_SIZE;
         const std::string fileName = std::to_string(fileNumber) + "_" + std::to_string(fileNumberSuffix);
 
-        std::ofstream file(fileName, std::ios::binary | std::ios::in | std::ios::out);
-        if (!file) {
-            // If the file doesn't exist, create it
-            file.open(fileName, std::ios::binary | std::ios::out);
-        }
-
-        if (!file) {
-            // Handle file open error
+        int fd = open(fileName.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+        if (fd == -1) {
             return;
         }
 
-        file.seekp(pageOffset);
-        file.write(page, PAGE_SIZE);
-
-        if (!file) {
-            // Handle write error
+        if (lseek(fd, pageOffset + PAGE_SIZE - 1, SEEK_SET) == -1) {
+            close(fd);
+            return;
         }
-        file.close();
+        if (write(fd, "", 1) == -1) {
+            close(fd);
+            return;
+        }
+
+        void* mappedFile = mmap(nullptr, PAGE_SIZE, PROT_WRITE, MAP_SHARED, fd, pageOffset);
+        if (mappedFile == MAP_FAILED) {
+            close(fd);
+            return;
+        }
+
+        std::memcpy(mappedFile, page, PAGE_SIZE);
+        msync(mappedFile, PAGE_SIZE, MS_SYNC);
+        munmap(mappedFile, PAGE_SIZE);
+        close(fd);
     }
 
 }
