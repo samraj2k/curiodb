@@ -14,3 +14,4 @@ curiodb is a personal project born from a sense of "curio"sity and a desire to u
 - [The Internals of PostgreSQL](https://www.interdb.jp/pg/index.html)
 - [Discovering the Computer Science Behind Postgres Indexes](https://patshaughnessy.net/2014/11/11/discovering-the-computer-science-behind-postgres-indexes)
 - [Measuring Mutexes, Spinlocks and how Bad the Linux Scheduler Really is](https://probablydance.com/2019/12/30/measuring-mutexes-spinlocks-and-how-bad-the-linux-scheduler-really-is/)
+- [Free Space Mapping file in details](https://www.highgo.ca/2020/10/23/free-space-mapping-file-in-details/)
